@@ -1,0 +1,182 @@
+---
+title: "ML HW1"
+author: "Runze Wang"
+output:
+  pdf_document: default
+  html_document: default
+  
+
+date: "2024-02-07"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE,
+                      warnings = FALSE, fig.align = 'center',  eval = TRUE)
+```
+
+```{r}
+library(r02pro)     #INSTALL IF NECESSARY
+library(tidyverse) #INSTALL IF NECESSARY
+library(caret)
+my_sahp <- sahp %>% 
+  na.omit() %>%
+  select(gar_car, liv_area, kit_qual, sale_price)
+my_sahp_train <- my_sahp[1:100, ]
+my_sahp_test <- my_sahp[-(1:100), ]
+```
+
+##1
+```{r}
+#a
+lm_gar <- lm(sale_price ~ gar_car, data = my_sahp_train)
+summary(lm_gar)
+summary(lm_gar)$r.squared
+
+lm_liv <- lm(sale_price ~ liv_area, data = my_sahp_train)
+summary(lm_liv)
+summary(lm_liv)$r.squared
+
+lm_kit <- lm(sale_price ~ kit_qual, data = my_sahp_train)
+summary(lm_kit)
+summary(lm_kit)$r.squared
+
+
+
+
+
+```
+gar_car: The sale price increases by 60.908 for every additional garage car capacity.
+The sale price is 69.515 when the garage car capacity is zero.
+        
+liv_area: The sale price increases by 0.11325 for every additional live area.
+ The sale price is 8.89852 when the live area is zero.
+
+kit_qual: The coefficient for kit_qual kit_qualExcellent is 209.61, so when kitchen quality is excellent, their sale price is 209.61 more than the baseline kitchen quality.
+
+The coefficient for kit_qualFair is -19.52, so when the kitchen quality is fair, their sale price is 19.52 less than the baseline kitchen quality.
+
+The coefficient for kit_qualGood is 56.61, so when the kitchen quality is good, their sale price is  56.61 more than the baseline kitchen quality.
+
+The slope is 137.31, which means the expected sale price is 137.31 for the baseline kitchen quality.
+
+The $R^2$ for each model is 0.321036, 0.473387, and 0.6067548 respectively.  kit_qual has the largest $R^2$, which means it is most useful in predicting.
+
+```{r}
+#b
+#train error
+pred_gar_train <- predict(lm_gar, newdata = my_sahp_train)
+train_error_gar <- sum((pred_gar_train - my_sahp_train$sale_price)^2)
+
+pred_liv_area <- predict(lm_liv, newdata = my_sahp_train)
+train_error_liv <- sum((pred_liv_area - my_sahp_train$sale_price)^2)
+
+pred_kit_qual <- predict(lm_kit, newdata = my_sahp_train)
+train_error_kit <- sum((pred_kit_qual - my_sahp_train$sale_price)^2)
+
+train_error_gar
+train_error_liv
+train_error_kit
+
+#test
+test_lm_gar <- lm(sale_price ~ gar_car, data = my_sahp_test)
+test_lm_liv <- lm(sale_price ~ liv_area, data = my_sahp_test)
+test_lm_kit <- lm(sale_price ~ kit_qual, data =my_sahp_test)
+
+pred_gar_test <- predict(test_lm_gar, newdata = my_sahp_test)
+test_error_gar <- sum((pred_gar_test - my_sahp_test$sale_price)^2)
+
+pred_liv_test<- predict(test_lm_liv, newdata = my_sahp_test)
+test_error_liv <- sum((pred_liv_test - my_sahp_test$sale_price)^2)
+
+pred_kit_test <- predict(test_lm_kit, newdata = my_sahp_test)
+test_error_kit <- sum((pred_kit_test - my_sahp_test$sale_price)^2)
+
+test_error_gar
+test_error_liv
+test_error_kit
+
+
+
+```
+The training error for gar_car, liv_area, and kit_qual are 409245, 317415.6, and 237028.3 respectively.
+The test errors for gar_car, liv_area, and kit_qual are 280353.9, 251088, and 266099.4 respectively.
+liv_area has the lowest test error and does not have the largest $R^2$. The test error is used to predict the accuracy and $R^2$ is used to test how the model fits the value.
+
+##Q2
+```{r}
+lm_all <- lm(sale_price ~ gar_car + liv_area + kit_qual, data = my_sahp_train)
+summary(lm_all)
+summary(lm_all)$r.squared
+
+lm_all_test <- lm(sale_price ~ gar_car + liv_area + kit_qual, data = my_sahp_test)
+pred_train <- predict(lm_all, newdata = my_sahp_train)
+train_error <- sum((my_sahp_train$sale_price - pred_train)^2)
+pred_test <- predict(lm_all_test, newdata = my_sahp_test)
+test_error <- sum((my_sahp_test$sale_price - pred_test)^2)
+
+train_error
+test_error
+
+```
+The coefficient on gar_car is equal to 27.559749, accounting for the impact of all the variables in the model, A house with a garage car capacity has an average of 27.559749 sale price than others with no garage car capacity.
+
+The coefficient on liv_area is equal to 0.057576, accounting for the impact of all the variables in the model, A house with a living area has an average 0.057576 sale price than others with no living area.
+
+The coefficient on kit_qualExcellent is equal to 141.628826, accounting for the impact of all the variables in the model, so for the kitchen quality to be excellent, their sale price is 141.628826 more than the baseline kitchen quality.
+
+The coefficient on kit_qualFair is equal to  -29.978452, accounting for the impact of all the variables in the model, so for the kitchen quality is fair, their sale price is 29.978452 less than the baseline kitchen quality.
+
+The coefficient on kit_qualGood  is equal to  21.639955, accounting for the impact of all the variables in the model, so for the kitchen quality to be good, their sale price is 21.639955 more than the baseline kitchen quality.
+
+When the gar_car, and liv_area are zero and the kitchen is in the baseline, the sale price is 23.810321.
+
+The $R^2$ is 0.7827407
+The training error is 130952.9 and the test error is 125715.1.
+The $R^2$ is greater than the three values we get from Q1, which means all variables in the model can be a better fit. The test errors are both less than the three values we get from Q1, which means the full model can predict data more accurately. The full model has better performance than the model with individual.
+
+##Q3
+```{r}
+k_seq <- 1:50
+train_error <- numeric(length(k_seq))
+test_error <- numeric(length(k_seq))
+for (k in k_seq) {
+  knn_model <- knnreg(sale_price ~ gar_car + liv_area + kit_qual, data = my_sahp_train, k = k)
+  pred_train <- predict(knn_model, my_sahp_train)
+  pred_test <- predict(knn_model, my_sahp_test)
+   train_error[k] <- sum((my_sahp_train$sale_price - pred_train)^2)
+  test_error[k] <- sum((my_sahp_test$sale_price - pred_test)^2)
+}
+error_data <- data.frame(k = k_seq, train_error = train_error, test_error = test_error)
+ggplot(error_data, aes(x = k)) +
+  geom_point(aes(y = train_error, colour = "Train Error")) +
+  geom_point(aes(y = test_error, colour = "Test Error")) +
+  geom_line(aes(y = train_error, colour = "Train Error", group = 1)) +
+  geom_line(aes(y = test_error, colour = "Test Error", group = 1)) +
+  labs(y = "Error", colour = "test vs train") +
+  theme_minimal()
+
+
+```
+The training error increases as the K increases. 
+The test error decreases as k increases, when k is greater than 9, the test error increases as k increases.
+
+```{r}
+#b
+train_error[10]
+test_error[10]
+```
+From the basic concepts, the optimal k normally is the square root of the k, in this case, it should be 10. When k is equal to 10, the training error is 355733 and the test error is  292141.5. For Q2, the training error is 130952.9 and the test error is 125715.1. The regression has better performance than KNN in this case.
+
+##Q4
+we can substitute $$\bar x$$ into x. so we can get $$\hat y  = \hat \beta_0 + \hat \beta_1 \bar x $$. 
+$$ \hat y  =(\bar y- \hat \beta_1 \bar x ) + \hat \beta_1 \bar x$$
+   
+  $$ \hat y = \bar y - \hat \beta_1 \bar x + \hat \beta_1 \bar x$$
+   $$\hat y = \bar y $$
+so the least squares line always passes through the point $(\bar x, \bar y$).
+
+
+
+
+
+
