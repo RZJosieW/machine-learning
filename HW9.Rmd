@@ -1,0 +1,110 @@
+---
+title: "HW 9"
+author: "Runze Wang"
+output:
+  pdf_document:
+    number_sections: true
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE,
+                      warnings = FALSE, fig.align = 'center',  eval = TRUE)
+```
+
+You can run the following code to prepare the analysis.
+```{r}
+library(r02pro)     #INSTALL IF NECESSARY
+library(tidyverse)  #INSTALL IF NECESSARY
+library(MASS)
+my_ahp <- ahp %>% dplyr::select(gar_car, liv_area, lot_area, bsmt_area, gar_area, oa_qual, sale_price, bedroom, bathroom, yr_built) %>%
+  na.omit()
+my_ahp_x <- my_ahp %>% dplyr::select(-sale_price)
+my_ahp_y <- my_ahp %>% dplyr::select(sale_price)
+```
+```{r cars}
+summary(cars)
+```
+
+## 1. Conduct PCA on `my_ahp_x` with `scale = TRUE`. 
+```{r}
+pca_result <- prcomp(my_ahp_x, scale = TRUE)
+
+```
+
+## a. Create a biplot. 
+```{r}
+biplot(pca_result)
+
+```
+## b. Plot the Proportion of Variance Explained and the Cumulative Proportion of Variance Explained. 
+```{r}
+pr.var <- pca_result$sdev^2
+pve <- pr.var / sum(pr.var)
+pve
+
+par(mfrow = c(1, 2))
+
+plot(pve, xlab = "Principal Component",
+ylab = "Proportion of Variance Explained", ylim = c(0, 1),
+type = "b")
+
+plot(cumsum(pve), xlab = "Principal Component",
+ylab = "Cumulative Proportion of Variance Explained", ylim = c(0, 1), type = "b")
+
+```
+## c. Fit a linear regression of `sale_price` on the first two principle components. What's the $R^2$? 
+```{r}
+pc_scores <- pca_result$x[, 1:2]
+model_pca <- lm(sale_price ~ .,  data = cbind(my_ahp_y, pc_scores))
+summary(model_pca)$r.squared
+
+```
+
+## d. Fit a linear regression of `sale_price` on `gar_car` and `liv_area`. What's the $R^2$? 
+```{r}
+model2 <- lm(sale_price ~ gar_car + liv_area, data = my_ahp)
+
+summary(model2)$r.squared
+
+```
+
+\newpage
+
+## 2. Conduct PCA on `my_ahp_x` with `scale = FALSE` and compare the results of a-c with those of Q1. 
+```{r}
+pca_result2 <- prcomp(my_ahp_x, scale = FALSE)
+
+```
+
+## a. Create a biplot. 
+```{r}
+biplot(pca_result2)
+
+```
+
+## b. Plot the Proportion of Variance Explained and the Cumulative Proportion of Variance Explained. 
+```{r}
+pr.var2 <- pca_result2$sdev^2
+pve2 <- pr.var2 / sum(pr.var2)
+pve2
+
+par(mfrow = c(1, 2))
+
+plot(pve2, xlab = "Principal Component",
+ylab = "Proportion of Variance Explained", ylim = c(0, 1),
+type = "b")
+
+plot(cumsum(pve2), xlab = "Principal Component",
+ylab = "Cumulative Proportion of Variance Explained", ylim = c(0, 1), type = "b")
+
+```
+c. Fit a linear regression of `sale_price` on the first two principle components. What's the $R^2$? 
+```{r}
+pc_scores2 <- pca_result2$x[, 1:2]
+model_pca2 <- lm(sale_price ~ ., data = cbind(my_ahp_y, pc_scores2))
+summary(model_pca2)$r.squared
+```
+ The R square for data, not standardization is less than the data is standardization.
+ For data with standardization, the first component only captures 50% of the feature, and for without standardization is captures almost 90% of the feature.
+
